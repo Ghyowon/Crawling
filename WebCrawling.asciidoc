@@ -1,0 +1,143 @@
++*In[1]:*+
+[source, ipython3]
+----
+# 크롤링 라이브러리 임포트
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
+import pandas as pd
+----
+
+
++*In[4]:*+
+[source, ipython3]
+----
+#bookImageSrcList
+html = urlopen('https://www.aladin.co.kr/shop/common/wbest.aspx?BranchType=1&start=we')
+bsObject = BeautifulSoup(html,"html.parser")
+----
+
+
++*In[7]:*+
+[source, ipython3]
+----
+bookImageList = []
+bookImage = bsObject.find_all("img",{"class":"i_cover"})
+----
+
+
++*In[13]:*+
+[source, ipython3]
+----
+for i in range(len(bookImage)):
+    newBookImage = bookImage[i].get("src")
+    bookImageList.append(newBookImage)
+----
+
+
++*In[36]:*+
+[source, ipython3]
+----
+# bookNameList
+nameHtml = urlopen('https://www.aladin.co.kr/shop/common/wbest.aspx?BranchType=1&start=we')
+nameBsObject = BeautifulSoup(nameHtml,"html.parser")
+
+bookNameList = []
+bookName = nameBsObject.find_all("a",{"class":"bo3"})
+
+for i in range(len(bookName)):
+    newBookName = bookName[i].find("b").text
+    newBookName = newBookName.replace(" ","")
+    bookNameList.append(newBookName)
+----
+
+
++*In[37]:*+
+[source, ipython3]
+----
+bookNameList
+----
+
+
++*In[38]:*+
+[source, ipython3]
+----
+arr=[]
+arr={
+    "도서명":bookNameList,
+    "도서 이미지 주소":bookImageList
+}
+----
+
+
++*In[42]:*+
+[source, ipython3]
+----
+#데이터 보기편하게 pandas사용
+finalList = pd.DataFrame(arr,columns=["도서명","도서 이미지 주소"])
+----
+
+
++*In[44]:*+
+[source, ipython3]
+----
+finalList.to_csv("bookList.csv")
+----
+
+
++*In[45]:*+
+[source, ipython3]
+----
+import cx_Oracle
+import os
+
+LOCATION = r"C:\instantclient_19_11"
+os.environ["PATH"]=LOCATION + ";"+os.environ["PATH"]
+----
+
+
++*In[52]:*+
+[source, ipython3]
+----
+connect = cx_Oracle.connect("HR","1234","localhost")
+cursor = connect.cursor()
+----
+
+
++*In[51]:*+
+[source, ipython3]
+----
+for i in range(len(bookNameList)):
+    sql = "INSERT INTO example(bookName,bookUrl) VALUES('"+bookNameList[i]+"','"+bookImageList[i]+"')"
+    cursor.execute(sql)
+cursor.close()
+connect.commit()
+connect.close()
+----
+
+
++*In[ ]:*+
+[source, ipython3]
+----
+
+----
+
+
++*In[ ]:*+
+[source, ipython3]
+----
+
+----
+
+
++*In[ ]:*+
+[source, ipython3]
+----
+
+----
+
+
++*In[ ]:*+
+[source, ipython3]
+----
+
+----
